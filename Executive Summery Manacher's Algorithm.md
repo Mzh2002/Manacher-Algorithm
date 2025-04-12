@@ -38,7 +38,7 @@ for i in range(len(s)):
 
 * This approach is more intuitive and avoids checking every substring, but it still has two major drawbacks:
   - **Time complexity is still O(n²)**: In the worst case, each center may expand up to the entire string.
-  - **It only detects odd-length palindromes**, since the center is assumed to be a single character. Even-length palindromes (like `"abba"`) are ignored.
+  - **It only detects odd-length palindromes**: since the center is assumed to be a single character. Even-length palindromes (like `"abba"`) are ignored.
 
 ## Our Goal
 
@@ -134,4 +134,57 @@ Therefore, instead of expanding every center from scratch, we can:
 This is the core insight behind **Manacher’s Algorithm**, which leverages symmetry and previously computed results to eliminate redundant computations and bring the runtime down to **O(n)**.
 
 # Manacher's Algorithm - Implementation
+
+
+
+Now let's dig into detailed implementation. First, insert `#` into the string:
+
+```python
+new_s = '#' + "#".join(s) + '#'
+```
+
+We need to keep track of the following three values:
+
+```python
+p = [0] * n  # p[i] will hold the radius of the longest palindrome centered at i
+center = 0   # The center of the palindrome that extends farthest to the right (i.e. rightmost palindrome)
+right = 0    # The right boundary of the palindrome centered at 'center'
+```
+
+Next, we begin scanning the string to find the longest palindromic substring centered at each character. Before expanding from a center to check for palindromes, we first try to **leverage previously computed information**. Since we’ve already recorded palindromic spans up to "`right`", we can use this information to make an **initial guess** about the radius at the current center. 
+
+```python
+for i in range(n):
+	mirror = 2 * center - i  # Mirror position of i around the current center
+
+  if i < right:
+    # Use the mirror's result if it doesn't go beyond the right boundary
+    # Length of the new palindrome should be at least the same as its mirror
+    p[i] = min(right - i, p[mirror])
+```
+
+Next, we attempt to **expand beyond the guessed radius** to find the actual longest palindrome centered at the current position—just like in the traditional center-expansion approach. 
+
+If this newly found palindrome extends past the current `right` boundary, we update both `center` and `right` to reflect the new rightmost-reaching palindrome.
+
+```python
+for i in range(n):
+        mirror = 2 * center - i 
+
+        if i < right:
+            p[i] = min(right - i, p[mirror])
+
+        # Attempt to expand the palindrome centered at i beyond guessed raduis
+        # Compare characters symmetrically around i as long as they match
+        while i + p[i] + 1 < n and i - p[i] - 1 >= 0 and t[i + p[i] + 1] == t[i - p[i] - 1]:
+            p[i] += 1
+
+        # If the expanded palindrome goes beyond the current right boundary,
+        # update the center and right to reflect the new rightmost palindrome
+        if i + p[i] > right:
+            center = i
+            right = i + p[i]
+```
+
+
 
