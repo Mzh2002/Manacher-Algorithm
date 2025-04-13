@@ -135,7 +135,7 @@ This is the core insight behind **Manacher’s Algorithm**, which leverages symm
 
 # Manacher's Algorithm - Implementation
 
-
+## Implementation using python
 
 Now let's dig into detailed implementation. First, insert `#` into the string:
 
@@ -154,7 +154,7 @@ right = 0    # The right boundary of the palindrome centered at 'center'
 Next, we begin scanning the string to find the longest palindromic substring centered at each character. Before expanding from a center to check for palindromes, we first try to **leverage previously computed information**. Since we’ve already recorded palindromic spans up to "`right`", we can use this information to make an **initial guess** about the radius at the current center. 
 
 ```python
-for i in range(n):
+for i in range(k):
 	mirror = 2 * center - i  # Mirror position of i around the current center
 
   if i < right:
@@ -168,7 +168,7 @@ Next, we attempt to **expand beyond the guessed radius** to find the actual long
 If this newly found palindrome extends past the current `right` boundary, we update both `center` and `right` to reflect the new rightmost-reaching palindrome.
 
 ```python
-for i in range(n):
+for i in range(k):
         mirror = 2 * center - i 
 
         if i < right:
@@ -186,5 +186,17 @@ for i in range(n):
             right = i + p[i]
 ```
 
+After getting the entire array `p`, you can extract either the length of the longest palindrome or its position. 
 
+The detailed implementation using different programming languages, including Python, Java, and C++, can be found in our bundled files.
+
+## Time complexity analysis
+
+As discussed earlier, the algorithm contains only a single outer loop, which iterates `k` times — where `k` is the length of the preprocessed string with inserted `#` characters. Although this transforms the original string of length `n` into one of length `2n + 1`, the overall complexity remains **O(n)**.
+
+The only potentially non-constant operation inside the loop is the **while loop** used for expanding palindromes. However, this expansion only occurs when it **extends the `right` boundary** of the currently known longest palindrome. Since `right` can only move forward—from `0` to at most `k`—the total number of expansions across the entire algorithm is bounded by `k`.
+
+This means the expansion step has **amortized O(1)** time complexity per iteration, leading to a total runtime of **O(n)**.
+
+# Programming Challenge
 
