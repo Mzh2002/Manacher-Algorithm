@@ -12,6 +12,7 @@ public class Manacher {
      *
      * Case 3. If the palindrome at the current center falls outside the right boundary
      * when calculated with the mirrored index, we have to reduce the radius to fit within the right boundary.
+     * After that, manually expand the palindrome.
      *
      * Any time we have the current index past the right boundary, we manually expand a palindrome.
      */
@@ -50,12 +51,12 @@ public class Manacher {
                 p[i] = Math.min(right - i, p[mirror]);
             }
 
-            // Case 2
+            // Case 2 and 3
             while (i + (1 + p[i]) < n && i - (1 + p[i]) >= 0 && t.charAt(i + (1 + p[i])) == t.charAt(i - (1 + p[i]))) {
                 p[i]++;
             }
 
-            // In case 2, if we expand beyond the right boundary, update old center and right
+            // In case 2 and 3, if we expand beyond the right boundary, update old center and right
             if (i + p[i] > right) {
                 center = i;
                 right = i + p[i];

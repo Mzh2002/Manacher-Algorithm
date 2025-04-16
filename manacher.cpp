@@ -16,6 +16,7 @@
  *
  * Case 3. If the palindrome at the current center falls outside the right boundary
  * when calculated with the mirrored index, we have to reduce the radius to fit within the right boundary.
+ * After that, manually expand the palindrome.
  *
  * Any time we have the current index past the right boundary, we manually expand a palindrome.
  */
