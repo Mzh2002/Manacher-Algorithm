@@ -46,11 +46,11 @@ def manacher(s):
         if i < right:
             p[i] = min(right - i, p[mirror])
 
-        # Case 2
+        # Case 2 and 3
         while i + (1 + p[i]) < n and i - (1 + p[i]) >= 0 and t[i + (1 + p[i])] == t[i - (1 + p[i])]:
             p[i] += 1
 
-        # In case 2, if we expand beyond the right boundary, update old center and right
+        # In case 2 and 3, if we expand beyond the right boundary, update old center and right
         if i + p[i] > right:
             center = i
             right = i + p[i]
