@@ -204,3 +204,22 @@ This means the expansion step has **amortized O(1)** time complexity per iterati
 
 # Programming Challenge
 
+## Problem
+
+Now, let's utilize Manacher's Algorithm to solve some real problems:
+
+### **Maximum Valid DNA Helix**
+
+DNA strands can form valid DNA helices when two complementary strands, or two strands where each nucleotide of one strand is paired with the complementary nucleotide of another strand (A is paired with T, and C is paired with G and vice versa). A scientist in the year 2040 has gained 3 abilities : 
+
+the ability to cut apart a DNA strand, the ability to fold a DNA strand in half (in between a nucleotide and even on a nucleotide), the ability to somehow form a valid DNA helix given that most of the corresponding nucleotides are complementary (the scientist is able to make a valid helix as long as there is a maximum of 1 non-complementary pair in the helix).
+
+Unfortunately, this scientist is broke and cannot afford to buy multiple DNA strands and only has access to one DNA strand. Given this DNA strand and this scientist’s abilities, find the longest possible valid DNA helix that the scientist can make (in terms of quantity of nucleotides - including the nucleotide on the bend if the scientist decides to bend a strand on a nucleotide). 
+
+If given multiple possible longest valid DNA helixes, return the first one. 
+
+### Example
+
+- **Helix = "GTACCGTT"**: TACCGTT is the longest possible valid DNA helix where the scientist bends the strand on the nucleotide C, and then A is paired with T, and the first C is paired with the second G. The first and final T is the one noncomplementary pair 
+
+- **Helix = “CAGC”**: CAG is the first valid longest DNA helix
