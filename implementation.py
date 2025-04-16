@@ -18,7 +18,7 @@ def manacher(s):
     """
 
     # Preprocess the string with '#' in between characters to find even-length palindromes
-    t = "#".join('#' + s + '#')
+    t = '#' + "#".join(s) + '#'
 
     n = len(t)
 
