@@ -2,17 +2,6 @@ import sys
 import os
 import time
 
-#
-#Central Idea: a palindrome with 1 mismatch should be the same size or larger as the longest palindromic substring with 0 mismatches 
-# if a palindrome with 1 mismatch is equal to the longest palindromic substring with 0 mismatches, that means that palindrome HAS NOT USED THE MISMATCH YET
-#so we first used manacher's algo to find the longest palindromic substring with 0 mismatches(LPS0); and then we try to find the longest palindromic substring with 1 mismatch(LPS1) via using manacher's algo again
-# At any index of the saved radius lists in LPS1, the value should be at least the same as the value in LPS0; if it is the same value, that means we have not used the mismatch yet; 
-# So at index i, if we find the mirrored position of the current index in LPS1 and see that the value saved for the mirroed position is equal to the value stored for LPS0 at index i, we can decude that we have not used the mismatch yet; so we can expand the palindrome outwards until we find a mismatch or hit the edge of the string; and once we do, we use the mismatch and continue expanding until another mismatch or edge is found and stop there. 
-# if we find that the value saved for the mirrored position is greater than the value stored for LPS0 at index i, we can deduce that we have used the mismatch already; so we can expand the palindrome outwards until we find a mismatch or edge and stop there. 
-# altering manacher's algorithm like this allows us to find the longest palindromic substring with at most 1 mismatch in O(n) (where n is the length of the string) time complexity as saving past values of the radius allows us to not have to recheck the same values over and over again. Space complexity is also O(n) as the largest space we're using is for the radius lists which store the same amount of values as the string length.
-
-
-#helps us check if two characters are matching pairs A-t C-G and #-# and vice versa
 matching_pairs = {
     'A': 'T',
     'T': 'A',
@@ -20,17 +9,17 @@ matching_pairs = {
     'G': 'C',
     '#': '#',
 }
-#adds a # to the beginning and end of the string and adds a # between each character in the string
-#this is done to make the string odd length and to make it easier to check for palindromes
-def preprocess(s):
+#main idea: Normally, manacher's algo can guarantee that the left half of a palindrome is the same as the right half of a palindrome (after the palindrome is checked at a given center). The values on the right half of the center are also at least as much as either the min(right bound (current value to the right bound) or the left half's corresponding value). However, an issue arises with the center value when performing a matching palindrome instead of a normal one. Manacher's algo can guarantee that the left side of the array matches with the right side at a given center. However, the center value of the current is not fully checked in this scenario and some issues may arise that normally don't happen.
+
+# The center may be a part of some other palindrome from the left side, and it may be a match with the corresponding values from left half's palindromes (with respect to each left half's palindromes center) , however, it MUST match with the corresponding values in right hand sided palindromes in order to use the saved results from the left side, and this may not always happen. So, at an index i, and a center c, you must check if the value at 2i - c(corresponding letter in palindrome with index in the center of the palindrome) matches with the value at center c. If it does, you may fully use the saved value, but if it doesn't and if the saved value exceeds 2i-c, you can only use 2i - c- 1 of the saved value as every value before the corresponding value of the center is guaranteed to match, but the center's corresponding value does not. 
+
+def preprocess(s): #adds a # to the beginning and end of the string and adds a # between each character in the string
     s = "#" + "#".join(s) + "#" 
     return s
-#removes all the # from the string and returns it
-def postprocess(s):
+def postprocess(s): #removes all the # from the string
     s = s.replace("#", "")
     return s
-#compares if two characters are matching pairs
-def matches(a, b):
+def matches(a, b): # Check if two characters are matching pairs
     if matching_pairs[a] == b:
         return True
     return False
@@ -38,74 +27,51 @@ def matches(a, b):
 
 def helix(s):
     s = preprocess(s)
-    radius0 = [0] * len(s) # radius0 stores the length of the longest palindromic substring with center at i
-    radius1 = [0] * len(s) # radius1 stores the length of the longest palindromic substring with one mistake with center at i
-    #center0 and right0 correspond to to the center and right edge of the right most palindrome processed so far with 0 mismatches, while center1 and right1 correspond to the same thing but for 1 mismatch
-    center0, center1 = 0, 0 
-    right0, right1 = 0, 0
+    
+    radius = [0] * len(s) 
+    center, right = 0, 0
 
     for i in range(1, len(s) - 1):
-        #first handle 0 mismatches
-        mirrored_pos = 2 * center0 - i #calculate the mirrored position of i with respect to center0
-
+        #calculate mirrored position of i with respect to center
+        mirrored_pos = 2 * center - i 
+        
         #checks the value of the mirrored position, we can only use the value if its less than the right edge of the palindrome, otherwise we can only determine that the radius is atmost the distance to the right edge of the palindrome
-        if i < right0:
-            radius0[i] = min(right0 - i, radius0[mirrored_pos])
+        if i < right:
+            #calculate center position with respect to i,
+            distance_from_center = i - center
+            corresponding_center_mirror = i + distance_from_center #finds the corresponding mirroed position of the center with respect to i
+            # Check if the corresponding center mirror is within bounds and matches the character at the center
+            if corresponding_center_mirror < len(s) and matches(s[corresponding_center_mirror], s[center]):
+                radius[i] = min(right - i, radius[mirrored_pos]) 
+            else: 
+                # If the center character doesn't match, we can only use the distance up to the center -1
+                radius[i] = min(right - i, distance_from_center - 1, radius[mirrored_pos])
 
         #expand the palindrome out until it either hits the edge of the string or a mismatch is found
-        while i + radius0[i] + 1 < len(s) and i - (radius0[i] + 1) >= 0 and matches(s[i + radius0[i] + 1], s[i - (radius0[i] + 1)]):
-            radius0[i] += 1
+        while i + radius[i] + 1 < len(s) and i - (radius[i] + 1) >= 0 and matches(s[i + radius[i] + 1], s[i - (radius[i] + 1)]):
+            radius[i] += 1
         #update center0 and right 0
-        if i + radius0[i] > right0:
-            center0 = i
-            right0 = i + radius0[i]
+        if i + radius[i] > right:
+            center = i
+            right = i + radius[i]
 
-        #then do 1 mismatch w manachers
-        mirrored_pos1 = 2 * center1 - i
-
-        if i < right1:
-            radius1[i] = min(right1 - i, radius1[mirrored_pos1])
-        # inherit any perfect‐match radius => if radius[i] is smaller than radius0[i], all that tells us is that radius[i] or the mirrored version isn't fully calculated yet, since we know that radius1[i] should be atleast  as large as radius0[i], we don't need to relook at any radiuses less than radius0[i]
-        radius1[i] = max(radius1[i], radius0[i])
-        # if no mismatch used yet at this center, try to spend one
-        if radius1[i] == radius0[i]:  # No mismatch used yet
-            mismatch_used = False
-            # Try to expand one position to potentially use our mismatch
-            if (i + radius1[i] + 1 < len(s) and 
-                i - (radius1[i] + 1) >= 0):
-                
-                if not matches(s[i + radius1[i] + 1], s[i - (radius1[i] + 1)]):
-                    # Found a mismatch, use it
-                    radius1[i] += 1
-                    mismatch_used = True
-            
-            # Continue expanding with perfect matches (after possibly using the mismatch)
-            while (i + radius1[i] + 1 < len(s) and 
-                i - (radius1[i] + 1) >= 0 and 
-                matches(s[i + radius1[i] + 1], s[i - (radius1[i] + 1)])):
-                radius1[i] += 1
-        else:
-        #resume perfect matches after the (optional) mismatch
-            while i + radius1[i] + 1 < len(s) and i - (radius1[i] + 1) >= 0 and matches(s[i + radius1[i] + 1], s[i - (radius1[i] + 1)]):
-                radius1[i] += 1
-        #update center1 and right1
-        if i + radius1[i] > right1:
-            center1 = i
-            right1 = i + radius1[i]
-    radius = 0
-    largestCenter = 0
-    #find largest palindrome with 1 mismatch
+    largest_radius = 0
+    largest_center = 0
+    #choose string with largest radius
     for i in range(0, len(s)):
-        if radius1[i] > radius:
-            radius = radius1[i]
-            largestCenter = i
-    return postprocess(s[largestCenter - radius:largestCenter + radius + 1])
+        if radius[i] > largest_radius:
+            largest_radius = radius[i]
+            largest_center = i
+    # print(radius)
+    # print(s)
+    return postprocess(s[largest_center - largest_radius:largest_center + largest_radius + 1])
 
 
 # start_time = time.perf_counter()
-input = sys.stdin.read().strip()
+input = sys.stdin.readline().strip()
 output = helix(input)
 # end_time = time.perf_counter()
 # time_spent = end_time - start_time
 # print(f"Time spent: {time_spent:.6f} seconds")
+
 print(output)
