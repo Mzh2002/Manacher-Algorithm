@@ -1,5 +1,0 @@
-Test Case 1 Solution: abcba
-Test Case 2 Solution: xyzzyx
-Test Case 3 Solution: racecar
-Test Case 4 Solution: jkllkj
-Test Case 5 Solution: abcdedcba
