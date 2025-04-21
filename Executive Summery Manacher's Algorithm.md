@@ -1,6 +1,6 @@
-# Introduction / Problem Statement
+## Introduction / Problem Statement
 
-## What's the problem?
+### What's the problem?
 
 If you've spent time programming, you've likely encountered the concept of **palindromes**—sequences that read the same forward and backward. While palindromes might seem like a trivial concept at first, they actually have meaningful applications in fields like **bioinformatics**, **natural language processing (NLP)**, and **data compression**. Here are a few examples:
 
@@ -8,13 +8,11 @@ If you've spent time programming, you've likely encountered the concept of **pal
 - **Pattern Recognition**: In data compression, algorithms like **LZ77** and **LZ78** can exploit palindromic patterns to identify and compress repeated structures more effectively.
 - **Error Correction**: Some advanced encoding schemes use palindromic properties to enhance data integrity and support robust error detection.
 
-From an algorithmic standpoint, checking whether a string is a palindrome is relatively simple—it’s often one of the first challenges beginners tackle. However, problems that involve **finding** or **constructing** palindromes are far more complex. Palindromes are fascinating to algorithm enthusiasts because of their inherent **symmetry**, which challenges the more linear way humans typically think about problems.
-
-Today’s problem is one of the most classic and elegant: 
+Today’s problem is one of the most classic and elegant about palindromes: 
 
 > Find the **longest palindromic substring** in a given string (A *substring* refers to a contiguous sequence of characters within a string).
 
-## Some Naive Approaches
+### Some Naive Approaches
 
 To find the longest palindromic substring in a given string, the most naive approach uses two nested loops to generate all possible substrings and check each one:
 
@@ -40,16 +38,16 @@ for i in range(len(s)):
   - **Time complexity is still O(n²)**: In the worst case, each center may expand up to the entire string.
   - **It only detects odd-length palindromes**: since the center is assumed to be a single character. Even-length palindromes (like `"abba"`) are ignored.
 
-## Our Goal
+### Our Goal
 
 To overcome these limitations, the algorithm we seek should:
 
 >* **Achieve a target runtime of O(n).**
 >* **Be able to detect both even- and odd-length palindromes efficiently in any string.**
 
-# Manacher's Algorithm - Idea
+## Manacher's Algorithm - Idea
 
-## Detect both even- and odd-length palindromes
+### Detect both even- and odd-length palindromes
 
 Let’s start solving the problem! 
 
@@ -74,37 +72,11 @@ abcdef => #a#b#c#d#e#f#
 
 After this transformation, we no longer need to distinguish between even- and odd-length palindromes—**every palindrome is now centered on a single character**, whether it’s a letter or a `#`.
 
-* **Odd-length palindromes** now center on actual characters:
-
-  ```
-  #a#b#c#b#a#
-       ^
-    normal character 'c' is the center
-  ```
-
-* **Even-length palindromes** now center on the `#` characters:
-
-  ```
-  #a#b#b#a#
-      ^
-    '#' is the center
-  ```
-
-## Achieve O(n) runtime
+### Achieve O(n) runtime
 
 Now comes the real challenge: **how do we achieve O(n) runtime?**
 
-Let’s revisit our earlier algorithm:
-
-```python
-for i in range(len(s)):
-  radius = 0
-  while i - radius >= 0 and i + radius < len(s) and s[i - radius] == s[i + radius]:
-    radius += 1
-  max_length = 2 * radius + 1
-```
-
-The good news is that we already have a single outer loop, iterating through all possible centers. So, if we can reduce the **inner palindrome expansion** to **amortized O(1)** per center, the entire algorithm will run in **O(n)** time.
+Let's look at our second brute force algorithm. The good news is that we already have a single outer loop, iterating through all possible centers. So, if we can reduce the **inner palindrome expansion** to **amortized O(1)** per center, the entire algorithm will run in **O(n)** time.
 
 This is where we borrow an idea similar to **dynamic programming**: instead of recomputing everything from scratch, we **store useful information** from earlier computations and reuse it when possible.
 
@@ -135,11 +107,11 @@ This is the core insight behind **Manacher’s Algorithm**, which leverages symm
 
 The picture below gives more information about what happens in Manacher's algorithm:
 
-![Three Cases in Manacher's algorithm](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*3gmhzjcDmd8n1lmu2MfzrQ.png)
+![](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*3gmhzjcDmd8n1lmu2MfzrQ.png)
 
-# Manacher's Algorithm - Implementation
+## Manacher's Algorithm - Implementation
 
-## Implementation using python
+### Implementation using python
 
 Now let's dig into detailed implementation. First, insert `#` into the string:
 
@@ -167,14 +139,11 @@ for i in range(k):
     p[i] = min(right - i, p[mirror])
 ```
 
-Next, we attempt to **expand beyond the guessed radius** to find the actual longest palindrome centered at the current position—just like in the traditional center-expansion approach. 
-
-If this newly found palindrome extends past the current `right` boundary, we update both `center` and `right` to reflect the new rightmost-reaching palindrome.
+Next, we attempt to **expand beyond the guessed radius** to find the actual longest palindrome centered at the current position—just like in the traditional center-expansion approach. If this newly found palindrome extends past the current `right` boundary, we update both `center` and `right` to reflect the new rightmost-reaching palindrome.
 
 ```python
 for i in range(k):
         mirror = 2 * center - i 
-
         if i < right:
             p[i] = min(right - i, p[mirror])
 
@@ -194,7 +163,7 @@ After getting the entire array `p`, you can extract either the length of the lon
 
 The detailed implementation using different programming languages, including Python, Java, and C++, can be found in our bundled files.
 
-## Time complexity analysis
+### Time/Space complexity analysis
 
 As discussed earlier, the algorithm contains only a single outer loop, which iterates `k` times — where `k` is the length of the preprocessed string with inserted `#` characters. Although this transforms the original string of length `n` into one of length `2n + 1`, the overall complexity remains **O(n)**.
 
@@ -202,24 +171,97 @@ The only potentially non-constant operation inside the loop is the **while loop*
 
 This means the expansion step has **amortized O(1)** time complexity per iteration, leading to a total runtime of **O(n)**.
 
-# Programming Challenge
+For space complexity, the only thing that needs a lot of space is `P` (which stores longest radius at each position) and `new_s` (the expanded string), and this costs **O(n)**.
 
-## Problem
+## Programming Challenge
 
-Now, let's utilize Manacher's Algorithm to solve some real problems:
+### Problem idea - **Maximum Valid DNA Helix**
 
-### **Maximum Valid DNA Helix**
+To encourage deeper learning and hands-on understanding, we challenge students to **modify Manacher's Algorithm** to solve a broader class of problems involving symmetry.
 
-DNA strands can form valid DNA helices when two complementary strands, or two strands where each nucleotide of one strand is paired with the complementary nucleotide of another strand (A is paired with T, and C is paired with G and vice versa). A scientist in the year 2040 has gained 3 abilities : 
+Instead of finding the longest palindromic substring, we ask students to find the longest **DNA Helix**—a substring that forms a valid double-stranded DNA structure. In this version, characters no longer match by identity. Instead, valid pairings follow the biological base-pair rules:
 
-the ability to cut apart a DNA strand, the ability to fold a DNA strand in half (in between a nucleotide and even on a nucleotide), the ability to somehow form a valid DNA helix given that most of the corresponding nucleotides are complementary (the scientist is able to make a valid helix as long as there is a maximum of 1 non-complementary pair in the helix).
+- `'A'` pairs with `'T'`
+- `'C'` pairs with `'G'`
 
-Unfortunately, this scientist is broke and cannot afford to buy multiple DNA strands and only has access to one DNA strand. Given this DNA strand and this scientist’s abilities, find the longest possible valid DNA helix that the scientist can make (in terms of quantity of nucleotides - including the nucleotide on the bend if the scientist decides to bend a strand on a nucleotide). 
+### Idea for solution
 
-If given multiple possible longest valid DNA helixes, return the first one. 
+This problem is almost identical to the classic longest palindromic substring problem!
 
-### Example
+The key difference is that instead of matching identical characters, we now want to match each character with its **corresponding pair**. To handle this, we can define a **mapping dictionary** that specifies valid character pairings.
 
-- **Helix = "GTACCGTT"**: TACCGTT is the longest possible valid DNA helix where the scientist bends the strand on the nucleotide C, and then A is paired with T, and the first C is paired with the second G. The first and final T is the one noncomplementary pair 
+```python
+mapping_dict = {
+    'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', '#': '#',
+}
 
-- **Helix = “CAGC”**: CAG is the first valid longest DNA helix
+def matches(c1, c2):
+  return mapping_dict[c1] == c2
+```
+
+But wait—is that really all? Is this problem **that** simple?
+
+At first glance, it may seem like just a minor tweak to the original palindrome problem. However, after implementing the naive solution and running it on several test cases, you may start to notice some unexpected behavior.
+
+Consider the following example:
+
+```
+G     G     C     C     C
+      ^     ^     ^
+   mirror center  i
+```
+
+When using Manacher's Algorithm, calculating the longest radius at a position `i` involves looking at its `mirror` with respect to the current `center`. 
+
+Now, in the above example, the mirror position has a radius of 1. Intuitively, this suggests that the position `i` should also have at least a radius of 1. However, in our modified problem, we might find that the radius at `i` is actually 0—'C'` and `'C' **do not form a valid pair** under our custom mapping.
+
+The problem arises because:
+
+> **`center` does not record enough information for itself.**
+
+What does this mean? First, look at our original palindrome case:
+
+```
+1     2     1     2     1
+^     ^     ^     ^     ^
+r  mirror center  i     l
+```
+
+We see that `center`, `r` (The mapping of `center` by `mirror`), and `l` (The mapping of `center` by `i`) must be the same.
+
+But in our altered case, things are different:
+
+```
+G     G     C     C     C
+^     ^     ^     ^     ^
+r  mirror center  i     l
+```
+
+We see that `center` matches `r` but does not match `l`. This means that our algorithm only ensures that characters AROUND `center` matches, but NOT `center` itself.
+
+So how do we fix this? Once we understand the source of the issue, the solution becomes simple and intuitive! We just add one more check: check whether `s[center] == s[i + (i - center)]`. If so, do things as usual. If not, this means that the longest radius at `i` is `i - center - 1`.
+
+### Inspiration
+
+At first glance, the problem we designed seemed deceptively simple—just a small twist on the classic longest palindromic substring task. However, this illusion fades when the **"magic" of Manacher's Algorithm breaks down** at the `center` under our modified matching rules.
+
+This challenge highlights an important lesson: to adapt powerful algorithms like Manacher's to new settings, one must have a **deep understanding of their inner workings**—not just how to implement them, but why they work.
+
+By confronting this breakdown, students gain valuable insights into:
+
+- The structural assumptions underlying Manacher’s Algorithm,
+- The importance of considering edge cases when applying what they learned before to something similar,
+- How to generalize or repair an algorithm when its assumptions no longer hold.
+
+This exercise also opens the door to applying Manacher’s approach to **other symmetry-based problems**, teaching students not only where this algorithm shines, but also **where and why it needs modification**.
+
+## Conclusion
+
+Today, we explored **Manacher's Algorithm**—a remarkably powerful technique for finding the longest palindromic substring in linear time. This algorithm opens the door to a new way of thinking: a world that is **symmetric, but not linear**.
+
+Manacher’s approach beautifully illustrates a fundamental principle in algorithm design:  
+> **Store useful information along the way, and use it wisely.**
+
+By analyzing a slightly altered version of the palindrome problem, we gained a **deeper understanding** of how Manacher's Algorithm works, where its assumptions lie, and how it can be modified to handle new challenges involving symmetry.
+
+This experience shows not only the power of the algorithm itself, but also the importance of **understanding algorithms at a conceptual level**—so that we can extend, adapt, and apply them to a wider range of problems.
